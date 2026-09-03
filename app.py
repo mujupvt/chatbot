@@ -326,6 +326,8 @@ st.markdown(
 st.markdown(
     """
     <div class="mitra-title">
+    </div>
+    <div class="mitra-title">
         🤖 Mitra AI
     </div>
 
