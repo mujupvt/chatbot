@@ -69,7 +69,7 @@ st.markdown(
 
 
 # Header
-st.title("🤖 Helper AI Chatbot")
+st.title("🤖 Mitra AI")
 
 st.markdown(
     '<div class="subtitle">'
