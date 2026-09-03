@@ -56,10 +56,12 @@ st.markdown(
     [data-testid="stChatMessage"] {
         border-radius: 15px;
         padding: 10px;
+        color:black;
     }
 
     [data-testid="stChatInput"] {
         border-radius: 15px;
+        color:black;
     }
 
     </style>
