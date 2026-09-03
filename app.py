@@ -338,12 +338,10 @@ st.markdown(
     </div>
 
     <div class="student-text">
-        Data Science Student
+        Data Science Student , GTEC Kuthuparamba
     </div>
 
-    <div class="college-text">
-        GTEC Kuthuparamba
-    </div>
+  
     """,
     unsafe_allow_html=True,
 )
