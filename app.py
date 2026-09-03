@@ -73,8 +73,8 @@ st.title("🤖 Helper AI Chatbot")
 
 st.markdown(
     '<div class="subtitle">'
-    'Created by Mujthaba'
-    'Data Science Student'
+    'Created by Mujthaba<br>'
+    'Data Science Student<br>'
     'GTEC Kuthuparamba'
     '</div>',
     unsafe_allow_html=True
