@@ -73,7 +73,7 @@ st.title("🤖 Helper AI Chatbot")
 
 st.markdown(
     '<div class="subtitle">'
-    'powered by gtec kuthuparamba'
+    'Created by Mujthaba'
     '</div>',
     unsafe_allow_html=True
 )
