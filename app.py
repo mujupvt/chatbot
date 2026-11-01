@@ -1,13 +1,12 @@
-```python
 import os
 
 import streamlit as st
 from dotenv import load_dotenv
 from google import genai
 
-# ==========================================================
+# ============================================================
 # 1. PAGE CONFIGURATION
-# ==========================================================
+# ============================================================
 
 st.set_page_config(
     page_title="Mitra AI",
@@ -15,32 +14,32 @@ st.set_page_config(
     layout="centered",
 )
 
-# ==========================================================
+# ============================================================
 # 2. LOAD ENVIRONMENT VARIABLES
-# ==========================================================
+# ============================================================
 
 load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
-    st.error("GEMINI_API_KEY is not configured. Please check your .env file.")
+    st.error("GEMINI_API_KEY is not configured.")
+    st.info("Please add GEMINI_API_KEY in your Render environment variables.")
     st.stop()
 
-# ==========================================================
+# ============================================================
 # 3. GEMINI CLIENT
-# ==========================================================
+# ============================================================
 
 client = genai.Client(api_key=api_key)
 
-# ==========================================================
+# ============================================================
 # 4. CUSTOM CSS
-# ==========================================================
+# ============================================================
 
 st.markdown(
     """
     <style>
-    /* Main page */
     .stApp {
         background: linear-gradient(
             180deg,
@@ -51,14 +50,12 @@ st.markdown(
         color: white;
     }
 
-    /* Main content width */
     .block-container {
         max-width: 760px;
         padding-top: 30px;
         padding-bottom: 130px;
     }
 
-    /* Header */
     .mitra-title {
         text-align: center;
         font-size: 38px;
@@ -79,18 +76,18 @@ st.markdown(
         font-size: 40px;
         font-weight: 700;
         color: #dce4ef;
-        margin-bottom: 45px;
+        margin-bottom: 40px;
     }
 
     .student-text {
         text-align: center;
         font-size: 25px;
         font-weight: 600;
+        line-height: 1.5;
         color: #dce4ef;
         margin-bottom: 35px;
     }
 
-    /* Chat messages */
     [data-testid="stChatMessage"] {
         border-radius: 12px;
         padding: 10px 12px;
@@ -115,7 +112,6 @@ st.markdown(
         line-height: 1.6;
     }
 
-    /* Chat input */
     [data-testid="stChatInput"] > div {
         background: #272831;
         border: 1px solid #ff3943;
@@ -149,7 +145,6 @@ st.markdown(
         background: #5a5c68 !important;
     }
 
-    /* Scrollbar */
     ::-webkit-scrollbar {
         width: 7px;
     }
@@ -163,125 +158,8 @@ st.markdown(
         border-radius: 10px;
     }
 
-    /* Mobile responsive */
     @media (max-width: 600px) {
         .block-container {
             padding-left: 15px;
             padding-right: 15px;
             padding-top: 20px;
-        }
-
-        .mitra-title {
-            font-size: 30px;
-        }
-
-        .created-text {
-            font-size: 14px;
-        }
-
-        .creator-name {
-            font-size: 32px;
-            margin-bottom: 30px;
-        }
-
-        .student-text {
-            font-size: 20px;
-            margin-bottom: 25px;
-        }
-
-        [data-testid="stChatMessage"] {
-            padding: 8px;
-        }
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# ==========================================================
-# 5. HEADER
-# ==========================================================
-
-st.markdown(
-    """
-    <div class="mitra-title">🤖 Mitra AI</div>
-
-    <div class="created-text">Created by</div>
-
-    <div class="creator-name">Mujthaba</div>
-
-    <div class="student-text">
-        Data Science Student<br>
-        GTEC Kuthuparamba
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# ==========================================================
-# 6. INITIALIZE CHAT HISTORY
-# ==========================================================
-
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# ==========================================================
-# 7. DISPLAY OLD MESSAGES
-# ==========================================================
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# ==========================================================
-# 8. CHAT INPUT
-# ==========================================================
-
-user_input = st.chat_input("Ask Mitra AI something...")
-
-# ==========================================================
-# 9. HANDLE USER MESSAGE
-# ==========================================================
-
-if user_input:
-    # Display and save user message
-    st.session_state.messages.append(
-        {
-            "role": "user",
-            "content": user_input,
-        }
-    )
-
-    with st.chat_message("user"):
-        st.markdown(user_input)
-
-    # Generate Gemini response
-    with st.chat_message("assistant"):
-        with st.spinner("Mitra AI is thinking..."):
-            try:
-                response = client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=user_input,
-                )
-
-                reply = response.text
-
-                if not reply:
-                    reply = "Sorry, I couldn't generate a response. Please try again."
-
-            except Exception:
-                reply = (
-                    "Sorry, something went wrong while connecting to Gemini. "
-                    "Please check your API key, internet connection, and model access."
-                )
-
-        st.markdown(reply)
-
-    # Save assistant response
-    st.session_state.messages.append(
-        {
-            "role": "assistant",
-            "content": reply,
-        }
-    )
-```
