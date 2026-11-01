@@ -1,157 +1,326 @@
+
 import os
+
 import streamlit as st
+from dotenv import load_dotenv
 from google import genai
 
-# Page configuration
+# ============================================================
+# 1. LOAD ENVIRONMENT VARIABLES
+# ============================================================
+
+load_dotenv()
+
+api_key = os.getenv("GEMINI_API_KEY")
+
+if not api_key:
+    st.set_page_config(
+        page_title="Mitra AI",
+        page_icon="🤖",
+        layout="centered",
+    )
+    st.error("GEMINI_API_KEY is not configured.")
+    st.stop()
+
+# ============================================================
+# 2. GEMINI CLIENT
+# ============================================================
+
+client = genai.Client(api_key=api_key)
+
+# ============================================================
+# 3. PAGE CONFIGURATION
+# ============================================================
+
 st.set_page_config(
     page_title="Mitra AI",
     page_icon="🤖",
     layout="centered",
 )
 
-# Gemini API key
-api_key = os.getenv("GEMINI_API_KEY")
+# ============================================================
+# 4. CUSTOM CSS
+# ============================================================
 
-if not api_key:
-    st.error("GEMINI_API_KEY is missing. Add it in Render Environment.")
-    st.stop()
+st.markdown(
+    """
+    <style>
+    /* MAIN PAGE */
 
-# Gemini client
-client = genai.Client(api_key=api_key)
-
-# Custom CSS
-css = """
-<style>
-.stApp {
-    background: linear-gradient(180deg, #1a2639, #172338, #111925);
-    color: white;
-}
-
-.block-container {
-    max-width: 760px;
-    padding-top: 30px;
-    padding-bottom: 130px;
-}
-
-.mitra-title {
-    text-align: center;
-    font-size: 38px;
-    font-weight: 700;
-    color: #f1f5f9;
-    margin-bottom: 25px;
-}
-
-.created-text {
-    text-align: center;
-    color: #d5dce7;
-    font-size: 15px;
-}
-
-.creator-name {
-    text-align: center;
-    font-size: 40px;
-    font-weight: 700;
-    color: #dce4ef;
-    margin-bottom: 40px;
-}
-
-.student-text {
-    text-align: center;
-    font-size: 23px;
-    font-weight: 600;
-    line-height: 1.6;
-    color: #dce4ef;
-    margin-bottom: 35px;
-}
-
-[data-testid="stChatMessage"] {
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 12px;
-}
-
-[data-testid="stChatInput"] > div {
-    background: #272831;
-    border: 1px solid #ff3943;
-    border-radius: 10px;
-}
-
-[data-testid="stChatInput"] textarea {
-    color: white !important;
-}
-
-@media (max-width: 600px) {
-    .block-container {
-        padding-left: 15px;
-        padding-right: 15px;
+    .stApp {
+        background: linear-gradient(
+            180deg,
+            #1a2639 0%,
+            #172338 55%,
+            #111925 100%
+        );
+        color: white;
     }
 
+    .block-container {
+        max-width: 760px;
+        padding-top: 30px;
+        padding-bottom: 130px;
+    }
+
+    /* HEADER */
+
     .mitra-title {
-        font-size: 30px;
+        text-align: center;
+        font-size: 38px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-top: 0;
+        margin-bottom: 25px;
+    }
+
+    .created-text {
+        text-align: center;
+        font-size: 15px;
+        font-weight: 400;
+        color: #d5dce7;
+        margin-bottom: 20px;
     }
 
     .creator-name {
-        font-size: 32px;
+        text-align: center;
+        font-size: 40px;
+        font-weight: 700;
+        color: #dce4ef;
+        margin-bottom: 65px;
     }
 
     .student-text {
-        font-size: 19px;
+        text-align: center;
+        font-size: 31px;
+        font-weight: 600;
+        color: #dce4ef;
+        margin-bottom: 65px;
     }
-}
-</style>
-"""
 
-st.markdown(css, unsafe_allow_html=True)
+    .college-text {
+        text-align: center;
+        font-size: 31px;
+        font-weight: 600;
+        color: #dce4ef;
+        margin-bottom: 45px;
+    }
 
-# Header
-st.markdown(
-    '<div class="mitra-title">🤖 Mitra AI</div>'
-    '<div class="created-text">Created by</div>'
-    '<div class="creator-name">Mujthaba</div>'
-    '<div class="student-text">'
-    'Data Science Student<br>GTEC Kuthuparamba'
-    '</div>',
+    /* CHAT MESSAGES */
+
+    [data-testid="stChatMessage"] {
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 14px;
+    }
+
+    [data-testid="stChatMessage"]:has(
+        [data-testid="chatAvatarIcon-user"]
+    ) {
+        background: #202733;
+    }
+
+    [data-testid="stChatMessage"]:has(
+        [data-testid="chatAvatarIcon-assistant"]
+    ) {
+        background: transparent;
+    }
+
+    [data-testid="stChatMessage"] p {
+        color: #f1f5f9;
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    /* CHAT INPUT */
+
+    [data-testid="stChatInput"] {
+        background: #0d1017;
+        padding-top: 15px;
+        padding-bottom: 25px;
+    }
+
+    [data-testid="stChatInput"] > div {
+        background: #272831;
+        border: 1px solid #ff3943;
+        border-radius: 8px;
+        box-shadow: none;
+    }
+
+    [data-testid="stChatInput"] textarea {
+        background: transparent !important;
+        color: white !important;
+        font-size: 14px !important;
+    }
+
+    [data-testid="stChatInput"] textarea::placeholder {
+        color: #a7a9b3 !important;
+        opacity: 1;
+    }
+
+    [data-testid="stChatInput"] > div:focus-within {
+        border-color: #ff3943;
+        box-shadow: 0 0 0 1px #ff3943;
+    }
+
+    /* SEND BUTTON */
+
+    [data-testid="stChatInput"] button {
+        background: #454752 !important;
+        border-radius: 8px;
+    }
+
+    [data-testid="stChatInput"] button:hover {
+        background: #5a5c68 !important;
+    }
+
+    /* SCROLLBAR */
+
+    ::-webkit-scrollbar {
+        width: 7px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #111722;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #394355;
+        border-radius: 10px;
+    }
+
+    /* MOBILE RESPONSIVE */
+
+    @media (max-width: 600px) {
+        .block-container {
+            padding-left: 15px;
+            padding-right: 15px;
+            padding-top: 20px;
+        }
+
+        .mitra-title {
+            font-size: 30px;
+        }
+
+        .created-text {
+            font-size: 14px;
+        }
+
+        .creator-name {
+            font-size: 32px;
+            margin-bottom: 40px;
+        }
+
+        .student-text {
+            font-size: 23px;
+            margin-bottom: 40px;
+        }
+
+        .college-text {
+            font-size: 22px;
+            margin-bottom: 30px;
+        }
+
+        [data-testid="stChatMessage"] {
+            padding: 8px;
+        }
+    }
+    </style>
+    """,
     unsafe_allow_html=True,
 )
 
-# Chat history
+# ============================================================
+# 5. HEADER
+# ============================================================
+
+st.markdown(
+    """
+    <div class="mitra-title"></div>
+
+    <div class="mitra-title">
+        🤖 Mitra AI
+    </div>
+
+    <div class="created-text">
+        Created by
+    </div>
+
+    <div class="creator-name">
+        Mujthaba
+    </div>
+
+    <div class="student-text">
+        Data Science Student , GTEC Kuthuparamba
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ============================================================
+# 6. INITIALIZE CHAT HISTORY
+# ============================================================
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+# ============================================================
+# 7. DISPLAY OLD MESSAGES
+# ============================================================
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Chat input
-user_input = st.chat_input("Ask Mitra AI something...")
+# ============================================================
+# 8. CHAT INPUT
+# ============================================================
+
+user_input = st.chat_input(
+    "Ask Helper AI something..."
+)
+
+# ============================================================
+# 9. HANDLE USER MESSAGE
+# ============================================================
 
 if user_input:
-    st.session_state.messages.append(
-        {"role": "user", "content": user_input}
-    )
 
+    # Display user message
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    with st.chat_message("assistant"):
-        with st.spinner("Mitra AI is thinking..."):
-            try:
+    # Save user message
+    st.session_state.messages.append(
+        {
+            "role": "user",
+            "content": user_input,
+        }
+    )
+
+    # Generate Gemini response
+    try:
+        with st.chat_message("assistant"):
+            with st.spinner("Mitra AI is thinking..."):
                 response = client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-3.6-flash",
                     contents=user_input,
                 )
 
-                reply = response.text or "Please try again."
+                reply = response.text or "No response received."
 
-            except Exception as error:
-                print(f"Gemini API error: {error}")
-                reply = (
-                    "Sorry, an error occurred. Please check your "
-                    "Gemini API key and model access."
-                )
+            st.markdown(reply)
 
-        st.markdown(reply)
+    except Exception as e:
+        reply = f"Error: {e}"
 
+        with st.chat_message("assistant"):
+            st.error(reply)
+
+    # Save AI response
     st.session_state.messages.append(
-        {"role": "assistant", "content": reply}
+        {
+            "role": "assistant",
+            "content": reply,
+        }
     )
