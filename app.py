@@ -1,165 +1,157 @@
 import os
-
 import streamlit as st
-from dotenv import load_dotenv
 from google import genai
 
-# ============================================================
-# 1. PAGE CONFIGURATION
-# ============================================================
-
+# Page configuration
 st.set_page_config(
     page_title="Mitra AI",
     page_icon="🤖",
     layout="centered",
 )
 
-# ============================================================
-# 2. LOAD ENVIRONMENT VARIABLES
-# ============================================================
-
-load_dotenv()
-
+# Gemini API key
 api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
-    st.error("GEMINI_API_KEY is not configured.")
-    st.info("Please add GEMINI_API_KEY in your Render environment variables.")
+    st.error("GEMINI_API_KEY is missing. Add it in Render Environment.")
     st.stop()
 
-# ============================================================
-# 3. GEMINI CLIENT
-# ============================================================
-
+# Gemini client
 client = genai.Client(api_key=api_key)
 
-# ============================================================
-# 4. CUSTOM CSS
-# ============================================================
+# Custom CSS
+css = """
+<style>
+.stApp {
+    background: linear-gradient(180deg, #1a2639, #172338, #111925);
+    color: white;
+}
 
-st.markdown(
-    """
-    <style>
-    .stApp {
-        background: linear-gradient(
-            180deg,
-            #1a2639 0%,
-            #172338 55%,
-            #111925 100%
-        );
-        color: white;
-    }
+.block-container {
+    max-width: 760px;
+    padding-top: 30px;
+    padding-bottom: 130px;
+}
 
+.mitra-title {
+    text-align: center;
+    font-size: 38px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 25px;
+}
+
+.created-text {
+    text-align: center;
+    color: #d5dce7;
+    font-size: 15px;
+}
+
+.creator-name {
+    text-align: center;
+    font-size: 40px;
+    font-weight: 700;
+    color: #dce4ef;
+    margin-bottom: 40px;
+}
+
+.student-text {
+    text-align: center;
+    font-size: 23px;
+    font-weight: 600;
+    line-height: 1.6;
+    color: #dce4ef;
+    margin-bottom: 35px;
+}
+
+[data-testid="stChatMessage"] {
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 12px;
+}
+
+[data-testid="stChatInput"] > div {
+    background: #272831;
+    border: 1px solid #ff3943;
+    border-radius: 10px;
+}
+
+[data-testid="stChatInput"] textarea {
+    color: white !important;
+}
+
+@media (max-width: 600px) {
     .block-container {
-        max-width: 760px;
-        padding-top: 30px;
-        padding-bottom: 130px;
+        padding-left: 15px;
+        padding-right: 15px;
     }
 
     .mitra-title {
-        text-align: center;
-        font-size: 38px;
-        font-weight: 700;
-        color: #f1f5f9;
-        margin-bottom: 25px;
-    }
-
-    .created-text {
-        text-align: center;
-        font-size: 15px;
-        color: #d5dce7;
-        margin-bottom: 15px;
+        font-size: 30px;
     }
 
     .creator-name {
-        text-align: center;
-        font-size: 40px;
-        font-weight: 700;
-        color: #dce4ef;
-        margin-bottom: 40px;
+        font-size: 32px;
     }
 
     .student-text {
-        text-align: center;
-        font-size: 25px;
-        font-weight: 600;
-        line-height: 1.5;
-        color: #dce4ef;
-        margin-bottom: 35px;
+        font-size: 19px;
     }
+}
+</style>
+"""
 
-    [data-testid="stChatMessage"] {
-        border-radius: 12px;
-        padding: 10px 12px;
-        margin-bottom: 14px;
-    }
+st.markdown(css, unsafe_allow_html=True)
 
-    [data-testid="stChatMessage"]:has(
-        [data-testid="chatAvatarIcon-user"]
-    ) {
-        background: #202733;
-    }
+# Header
+st.markdown(
+    '<div class="mitra-title">🤖 Mitra AI</div>'
+    '<div class="created-text">Created by</div>'
+    '<div class="creator-name">Mujthaba</div>'
+    '<div class="student-text">'
+    'Data Science Student<br>GTEC Kuthuparamba'
+    '</div>',
+    unsafe_allow_html=True,
+)
 
-    [data-testid="stChatMessage"]:has(
-        [data-testid="chatAvatarIcon-assistant"]
-    ) {
-        background: transparent;
-    }
+# Chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-    [data-testid="stChatMessage"] p {
-        color: #f1f5f9;
-        font-size: 15px;
-        line-height: 1.6;
-    }
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-    [data-testid="stChatInput"] > div {
-        background: #272831;
-        border: 1px solid #ff3943;
-        border-radius: 10px;
-        box-shadow: none;
-    }
+# Chat input
+user_input = st.chat_input("Ask Mitra AI something...")
 
-    [data-testid="stChatInput"] textarea {
-        background: transparent !important;
-        color: white !important;
-        font-size: 14px !important;
-    }
+if user_input:
+    st.session_state.messages.append(
+        {"role": "user", "content": user_input}
+    )
 
-    [data-testid="stChatInput"] textarea::placeholder {
-        color: #a7a9b3 !important;
-        opacity: 1;
-    }
+    with st.chat_message("user"):
+        st.markdown(user_input)
 
-    [data-testid="stChatInput"] > div:focus-within {
-        border-color: #ff3943;
-        box-shadow: 0 0 0 1px #ff3943;
-    }
+    with st.chat_message("assistant"):
+        with st.spinner("Mitra AI is thinking..."):
+            try:
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=user_input,
+                )
 
-    [data-testid="stChatInput"] button {
-        background: #454752 !important;
-        border-radius: 8px;
-        color: white !important;
-    }
+                reply = response.text or "Please try again."
 
-    [data-testid="stChatInput"] button:hover {
-        background: #5a5c68 !important;
-    }
+            except Exception as error:
+                print(f"Gemini API error: {error}")
+                reply = (
+                    "Sorry, an error occurred. Please check your "
+                    "Gemini API key and model access."
+                )
 
-    ::-webkit-scrollbar {
-        width: 7px;
-    }
+        st.markdown(reply)
 
-    ::-webkit-scrollbar-track {
-        background: #111722;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: #394355;
-        border-radius: 10px;
-    }
-
-    @media (max-width: 600px) {
-        .block-container {
-            padding-left: 15px;
-            padding-right: 15px;
-            padding-top: 20px;
+    st.session_state.messages.append(
+        {"role": "assistant", "content": reply}
+    )
