@@ -1,415 +1,452 @@
 import os
+
 import streamlit as st
 from dotenv import load_dotenv
 from google import genai
 
-# ==================================================
-# 1. PAGE CONFIGURATION
-# ==================================================
+============================================================
 
-st.set_page_config(
-    page_title="Mitra AI",
-    page_icon="🤖",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+1. LOAD ENVIRONMENT VARIABLES
 
-# ==================================================
-# 2. GEMINI CONNECTION
-# ==================================================
+============================================================
 
 load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
-    st.error("GEMINI_API_KEY is not configured.")
-    st.stop()
+st.error("GEMINI_API_KEY is not configured.")
+st.stop()
+
+============================================================
+
+2. GEMINI CLIENT
+
+============================================================
 
 client = genai.Client(api_key=api_key)
 
-# ==================================================
-# 3. SESSION STATE
-# ==================================================
+============================================================
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+3. PAGE CONFIGURATION
 
-if "pending_prompt" not in st.session_state:
-    st.session_state.pending_prompt = None
+============================================================
 
-# ==================================================
-# 4. PREMIUM CSS
-# ==================================================
+st.set_page_config(
+page_title="Mitra AI",
+page_icon="🤖",
+layout="centered",
+)
 
-st.markdown("""
+============================================================
+
+4. CUSTOM CSS
+
+============================================================
+
+st.markdown(
+"""
 <style>
 
-/* Main background */
+/* ======================================================  
+   MAIN PAGE  
+====================================================== */  
 
-.stApp {
-    background:
-        radial-gradient(ellipse at top left,
-        #25204b 0%, transparent 40%),
-        linear-gradient(135deg,
-        #080d1b, #111827, #15152b);
-    color: #f8fafc;
-}
+.stApp {  
+    background: linear-gradient(  
+        180deg,  
+        #1a2639 0%,  
+        #172338 55%,  
+        #111925 100%  
+    );  
 
-/* Main container */
+    color: white;  
+}  
 
-.block-container {
-    max-width: 1050px;
-    padding-top: 35px;
-    padding-bottom: 100px;
-}
 
-/* Sidebar */
+/* Main content width */  
 
-section[data-testid="stSidebar"] {
-    background: #0c1222;
-    border-right: 1px solid #27304a;
-}
+.block-container {  
+    max-width: 760px;  
+    padding-top: 30px;  
+    padding-bottom: 130px;  
+}  
 
-/* Main title */
 
-.mitra-logo {
-    font-size: 42px;
-    font-weight: 800;
-    text-align: center;
-    letter-spacing: -1px;
-    background: linear-gradient(
-        90deg, #8b7cff, #54c8ff
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 5px;
-}
+/* ======================================================  
+   HEADER  
+====================================================== */  
 
-/* Subtitle */
+.mitra-title {  
+    text-align: center;  
 
-.mitra-subtitle {
-    text-align: center;
-    color: #9ca9c2;
-    font-size: 15px;
-    margin-bottom: 35px;
-}
+    font-size: 38px;  
+    font-weight: 700;  
 
-/* Welcome title */
+    color: #f1f5f9;  
 
-.welcome-title {
-    font-size: 32px;
-    font-weight: 750;
-    text-align: center;
-    color: #ffffff;
-    margin-top: 60px;
-}
+    margin-top: 0;  
+    margin-bottom: 25px;  
+}  
 
-.welcome-description {
-    text-align: center;
-    color: #a3adc2;
-    font-size: 15px;
-    margin-bottom: 30px;
-}
 
-/* Chat messages */
+.created-text {  
+    text-align: center;  
 
-[data-testid="stChatMessage"] {
-    background: rgba(255,255,255,0.045);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 18px;
-    padding: 17px;
-    margin-bottom: 15px;
-}
+    font-size: 15px;  
+    font-weight: 400;  
 
-/* Message text */
+    color: #d5dce7;  
 
-[data-testid="stChatMessage"] p {
-    color: #e8edf8;
-    line-height: 1.7;
-    font-size: 15px;
-}
+    margin-bottom: 20px;  
+}  
 
-/* Input area */
 
-[data-testid="stChatInput"] > div {
-    background: #1b2235 !important;
-    border: 1px solid #5147a8 !important;
-    border-radius: 18px !important;
-}
+.creator-name {  
+    text-align: center;  
 
-/* Input text */
+    font-size: 40px;  
+    font-weight: 700;  
 
-[data-testid="stChatInput"] textarea {
-    color: white !important;
-}
+    color: #dce4ef;  
 
-/* Buttons */
+    margin-bottom: 65px;  
+}  
 
-.stButton button {
-    background: linear-gradient(
-        100deg, #635bff, #895cf6
-    );
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 10px;
-    transition: 0.25s;
-}
 
-/* Button hover */
+.student-text {  
+    text-align: center;  
 
-.stButton button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px #635bff50;
-    border: none;
-}
+    font-size: 31px;  
+    font-weight: 600;  
 
-/* Sidebar text */
+    color: #dce4ef;  
 
-section[data-testid="stSidebar"] p {
-    color: #cbd5e1;
-}
+    margin-bottom: 65px;  
+}  
 
-/* Divider */
 
-hr {
-    border-color: #29324a;
-}
+.college-text {  
+    text-align: center;  
 
-/* Mobile */
+    font-size: 31px;  
+    font-weight: 600;  
 
-@media(max-width: 600px) {
+    color: #dce4ef;  
 
-    .block-container {
-        padding: 20px 15px 90px;
-    }
+    margin-bottom: 45px;  
+}  
 
-    .mitra-logo {
-        font-size: 34px;
-    }
 
-    .welcome-title {
-        font-size: 25px;
-        margin-top: 35px;
-    }
+/* ======================================================  
+   CHAT MESSAGES  
+====================================================== */  
 
-    [data-testid="stChatMessage"] {
-        padding: 12px;
-    }
-}
+[data-testid="stChatMessage"] {  
+    border-radius: 12px;  
 
-</style>
-""", unsafe_allow_html=True)
+    padding: 10px 12px;  
 
-# ==================================================
-# 5. SIDEBAR
-# ==================================================
+    margin-bottom: 14px;  
+}  
 
-with st.sidebar:
 
-    st.markdown("## 🤖 Mitra AI")
+/* User message */  
 
-    st.caption("Your AI companion")
+[data-testid="stChatMessage"]:has(  
+    [data-testid="chatAvatarIcon-user"]  
+) {  
+    background: #202733;  
+}  
 
-    st.divider()
 
-    if st.button("＋  New Chat", use_container_width=True):
-        st.session_state.messages = []
-        st.session_state.pending_prompt = None
-        st.rerun()
+/* Assistant message */  
 
-    st.markdown("### Your Assistant")
+[data-testid="stChatMessage"]:has(  
+    [data-testid="chatAvatarIcon-assistant"]  
+) {  
+    background: transparent;  
+}  
 
-    st.markdown("""
-    - 💬 AI conversations
-    - 🧠 Gemini intelligence
-    - ⚡ Quick answers
-    """)
 
-    st.divider()
+/* Message text */  
 
-    st.markdown("### About")
+[data-testid="stChatMessage"] p {  
+    color: #f1f5f9;  
 
-    st.write("Created by *Mujthaba*")
+    font-size: 15px;  
 
-    st.caption("Data Science Student")
-    st.caption("GTEC Kuthuparamba")
+    line-height: 1.6;  
+}  
 
-    st.divider()
 
-    st.caption("Powered by Google Gemini")
+/* ======================================================  
+   CHAT INPUT  
+====================================================== */  
 
-    st.caption("Mitra AI © 2026")
+[data-testid="stChatInput"] {  
+    background: #0d1017;  
 
-# ==================================================
-# 6. MAIN HEADER
-# ==================================================
+    padding-top: 15px;  
+    padding-bottom: 25px;  
+}  
 
-st.markdown(
-    '<div class="mitra-logo">✦ Mitra AI</div>',
-    unsafe_allow_html=True
+
+[data-testid="stChatInput"] > div {  
+    background: #272831;  
+
+    border: 1px solid #ff3943;  
+
+    border-radius: 8px;  
+
+    box-shadow: none;  
+}  
+
+
+/* Input text */  
+
+[data-testid="stChatInput"] textarea {  
+    background: transparent !important;  
+
+    color: white !important;  
+
+    font-size: 14px !important;  
+}  
+
+
+/* Placeholder */  
+
+[data-testid="stChatInput"] textarea::placeholder {  
+    color: #a7a9b3 !important;  
+
+    opacity: 1;  
+}  
+
+
+/* Input focus */  
+
+[data-testid="stChatInput"] > div:focus-within {  
+    border-color: #ff3943;  
+
+    box-shadow:  
+        0 0 0 1px #ff3943;  
+}  
+
+
+/* ======================================================  
+   SEND BUTTON  
+====================================================== */  
+
+[data-testid="stChatInput"] button {  
+    background: #454752 !important;  
+
+    border-radius: 8px;  
+}  
+
+
+[data-testid="stChatInput"] button:hover {  
+    background: #5a5c68 !important;  
+}  
+
+
+/* ======================================================  
+   SCROLLBAR  
+====================================================== */  
+
+::-webkit-scrollbar {  
+    width: 7px;  
+}  
+
+::-webkit-scrollbar-track {  
+    background: #111722;  
+}  
+
+::-webkit-scrollbar-thumb {  
+    background: #394355;  
+
+    border-radius: 10px;  
+}  
+
+
+/* ======================================================  
+   MOBILE RESPONSIVE  
+====================================================== */  
+
+@media (max-width: 600px) {  
+
+    .block-container {  
+        padding-left: 15px;  
+        padding-right: 15px;  
+        padding-top: 20px;  
+    }  
+
+
+    .mitra-title {  
+        font-size: 30px;  
+    }  
+
+
+    .created-text {  
+        font-size: 14px;  
+    }  
+
+
+    .creator-name {  
+        font-size: 32px;  
+
+        margin-bottom: 40px;  
+    }  
+
+
+    .student-text {  
+        font-size: 23px;  
+
+        margin-bottom: 40px;  
+    }  
+
+
+    .college-text {  
+        font-size: 22px;  
+
+        margin-bottom: 30px;  
+    }  
+
+
+    [data-testid="stChatMessage"] {  
+        padding: 8px;  
+    }  
+}  
+
+</style>  
+""",  
+unsafe_allow_html=True,
+
 )
 
+============================================================
+
+5. HEADER
+
+============================================================
+
 st.markdown(
-    '<div class="mitra-subtitle">'
-    'Your intelligent AI companion · Ask anything'
-    '</div>',
-    unsafe_allow_html=True
+"""
+<div class="mitra-title">
+</div>
+<div class="mitra-title">
+🤖 Mitra AI
+</div>
+
+<div class="created-text">  
+    Created by  
+</div>  
+
+<div class="creator-name">  
+    Mujthaba  
+</div>  
+
+<div class="student-text">  
+    Data Science Student , GTEC Kuthuparamba  
+</div>  
+
+
+""",  
+unsafe_allow_html=True,
+
 )
 
-# ==================================================
-# 7. WELCOME SCREEN
-# ==================================================
+============================================================
 
-if not st.session_state.messages:
+6. INITIALIZE CHAT HISTORY
 
-    st.markdown(
-        '<div class="welcome-title">'
-        'Hello! What can I help you with? 👋'
-        '</div>',
-        unsafe_allow_html=True
-    )
+============================================================
 
-    st.markdown(
-        '<div class="welcome-description">'
-        'Ask questions, explore ideas and learn something new.'
-        '</div>',
-        unsafe_allow_html=True
-    )
+if "messages" not in st.session_state:
+st.session_state.messages = []
 
-    col1, col2 = st.columns(2)
+============================================================
 
-    with col1:
+7. DISPLAY OLD MESSAGES
 
-        if st.button(
-            "💻  Learn Programming",
-            use_container_width=True
-        ):
-            st.session_state.pending_prompt = (
-                "Teach me Python programming from beginner level."
-            )
-
-    with col2:
-
-        if st.button(
-            "📊  Data Science",
-            use_container_width=True
-        ):
-            st.session_state.pending_prompt = (
-                "Explain Data Science in simple language."
-            )
-
-    col3, col4 = st.columns(2)
-
-    with col3:
-
-        if st.button(
-            "💡  Generate Ideas",
-            use_container_width=True
-        ):
-            st.session_state.pending_prompt = (
-                "Give me some creative project ideas."
-            )
-
-    with col4:
-
-        if st.button(
-            "🌍  Ask Anything",
-            use_container_width=True
-        ):
-            st.session_state.pending_prompt = (
-                "What are some interesting things I can learn today?"
-            )
-
-# ==================================================
-# 8. DISPLAY CHAT HISTORY
-# ==================================================
+============================================================
 
 for message in st.session_state.messages:
 
-    with st.chat_message(message["role"]):
+with st.chat_message(message["role"]):  
+    st.markdown(message["content"])
 
-        st.markdown(message["content"])
+============================================================
 
-# ==================================================
-# 9. CHAT INPUT
-# ==================================================
+8. CHAT INPUT
+
+============================================================
 
 user_input = st.chat_input(
-    "Message Mitra AI..."
+"Ask Helper AI something..."
 )
 
-if st.session_state.pending_prompt:
+============================================================
 
-    user_input = st.session_state.pending_prompt
-    st.session_state.pending_prompt = None
+9. HANDLE USER MESSAGE
 
-# ==================================================
-# 10. GEMINI RESPONSE
-# ==================================================
+============================================================
 
 if user_input:
 
-    # Display user message
+# --------------------------------------------------------  
+# Display user message  
+# --------------------------------------------------------  
 
-    with st.chat_message("user"):
-        st.markdown(user_input)
+with st.chat_message("user"):  
+    st.markdown(user_input)  
 
-    st.session_state.messages.append({
-        "role": "user",
-        "content": user_input
-    })
 
-    # Build conversation context
+# --------------------------------------------------------  
+# Save user message  
+# --------------------------------------------------------  
 
-    conversation = []
+st.session_state.messages.append(  
+    {  
+        "role": "user",  
+        "content": user_input,  
+    }  
+)  
 
-    for message in st.session_state.messages:
 
-        conversation.append({
-            "role": (
-                "user" if message["role"] == "user"
-                else "model"
-            ),
-            "parts": [
-                {"text": message["content"]}
-            ]
-        })
+# --------------------------------------------------------  
+# Generate Gemini response  
+# --------------------------------------------------------  
 
-    # Generate response
+try:  
 
-    try:
+    response = client.models.generate_content(  
+        model="gemini-3.6-flash",  
+        contents=user_input,  
+    )  
 
-        with st.chat_message("assistant"):
+    reply = response.text  
 
-            with st.spinner("Mitra AI is thinking..."):
 
-                response = client.models.generate_content(
-                    model="gemini-3.6-flash",
-                    contents=conversation
-                )
+except Exception as e:  
 
-                reply = response.text
+    reply = f"Error: {e}"  
 
-                if not reply:
-                    reply = "Sorry, I couldn't generate a response."
 
-            st.markdown(reply)
+# --------------------------------------------------------  
+# Display AI response  
+# --------------------------------------------------------  
 
-        st.session_state.messages.append({
-            "role": "assistant",
-            "content": reply
-        })
+with st.chat_message("assistant"):  
+    st.markdown(reply)  
 
-    except Exception as e:
 
-        error_message = f"Something went wrong: {e}"
+# --------------------------------------------------------  
+# Save AI response  
+# --------------------------------------------------------  
 
-        with st.chat_message("assistant"):
-            st.error(error_message)
-
-        st.session_state.messages.append({
-            "role": "assistant",
-            "content": error_message
-        })
+st.session_state.messages.append(  
+    {  
+        "role": "assistant",  
+        "content": reply,  
+    }  
+)
